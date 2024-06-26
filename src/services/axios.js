@@ -3,7 +3,8 @@ import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth.js';
 
 const axiosInstance = axios.create({
-    baseURL: 'http://effi-ALB-1422494658.ap-northeast-2.elb.amazonaws.com',
+    baseURL: 'https://effi-ALB-1422494658.ap-northeast-2.elb.amazonaws.com',
+    //baseURL: 'http://43.203.76.140:8080',
     timeout: 5000,
 });
 
