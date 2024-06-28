@@ -21,7 +21,7 @@ export default defineConfig({
     }
   },
     build: {
-    outDir: "../../Effi-FE-fin/src/main/resources/static"
+    //outDir: "../../Effi-FE-fin/src/main/resources/static"
   },
   server: {
     host: true,
