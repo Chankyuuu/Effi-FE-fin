@@ -11,16 +11,16 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="search in paginatedSearches" :key="search.scheduleId" @click="editSchedule(search.scheduleId)">
-          <td>{{ formatDate(search.startTime) }}</td>
+        <tr v-for="schedule in paginatedSchedules" :key="schedule.scheduleId" @click="editSchedule(schedule)">
+          <td>{{ formatDate(schedule.startTime) }}</td>
           <td>
-            <span :style="{ backgroundColor: getCategoryColor(search.categoryName) }" class="category-dot"></span>
-            {{ search.categoryName }}
+            <span :style="{ backgroundColor: getCategoryColor(schedule.categoryName) }" class="category-dot"></span>
+            {{ schedule.categoryName }}
           </td>
-          <td><span :class="getStatusClass(search.status)">{{ getStatus(search.status) }}</span></td>
-          <td>{{ search.title }}</td>
+          <td><span :class="getStatusClass(schedule.status)">{{ getStatus(schedule.status) }}</span></td>
+          <td>{{ schedule.title }}</td>
           <td>
-            <span v-for="tag in search.tagNames" :key="tag" :style="{ backgroundColor: randomColor() }"
+            <span v-for="tag in parseTags(schedule.tagNames)" :key="tag" :style="{ backgroundColor: randomColor() }"
               class="badge me-1">#{{ tag }}</span>
           </td>
         </tr>
@@ -45,7 +45,7 @@
 
 <script>
 export default {
-  props: ['searches'],
+  props: ['schedules'],
   data() {
     return {
       currentPage: 1,
@@ -54,12 +54,12 @@ export default {
   },
   computed: {
     totalPages() {
-      return Math.ceil(this.searches.length / this.pageSize);
+      return Math.ceil(this.schedules.length / this.pageSize);
     },
-    paginatedSearches() {
+    paginatedSchedules() {
       const start = (this.currentPage - 1) * this.pageSize;
       const end = start + this.pageSize;
-      return this.searches.slice(start, end);
+      return this.schedules.slice(start, end);
     }
   },
   methods: {
@@ -108,8 +108,12 @@ export default {
           return '#000000'; // 기본 색상 
       }
     },
-    editSchedule(scheduleId) {
-      this.$emit('edit-schedule', scheduleId);
+    parseTags(tagNames) {
+      if (!tagNames) return [];
+      return tagNames.map(tag => tag.replace(/.*:"(.*)".*/, '$1'));
+    },
+    editSchedule(schedule) {
+      this.$emit('edit-schedule', schedule.scheduleId);
     },
     changePage(page) {
       if (page < 1) {

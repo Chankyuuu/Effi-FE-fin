@@ -7,6 +7,7 @@ import VueDevTools from 'vite-plugin-vue-devtools'
 // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
 import vuetify from 'vite-plugin-vuetify'
 
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -20,7 +21,7 @@ export default defineConfig({
     }
   },
     build: {
-    // outDir: "../../Effi-FE-fin/src/main/resources/static"
+    outDir: "../../Effi-FE-fin/src/main/resources/static"
   },
   server: {
     host: true,

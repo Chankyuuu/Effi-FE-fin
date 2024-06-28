@@ -8,7 +8,7 @@
         </div>
         <div class="d-flex align-items-center me-3 mb-2 mb-md-0 nowrap">
           <span class="me-2"><strong>상태</strong></span>
-          <select v-model="selectedStatus" class="form-select">
+          <select v-model="selectedStatus" class="form-select" @change="filterByStatus">
             <option value="all">전체</option>
             <option value="0">예정됨</option>
             <option value="1">진행중</option>
@@ -19,7 +19,7 @@
           @change-view-mode="changeViewMode" />
       </div>
       <div>
-        <SearchList :searches="filteredSearchesByStatus" @edit-schedule="showEditScheduleModal" />
+        <AllSchedulesList :schedules="filteredSchedulesByStatus" @edit-schedule="showEditScheduleModal" />
       </div>
       <EditScheduleModal v-if="showModal" :show="showModal" :schedule-id="selectedScheduleId" @close="showModal = false"
         @update-schedule="handleScheduleUpdate" />
@@ -28,55 +28,34 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue';
-import SearchNavigator from '../components/SearchNavigator.vue';
-import SearchList from '../components/SearchList.vue';
+import { ref, computed, onMounted, watch } from 'vue';
+import SearchNavigator from '@/components/SearchNavigator.vue';
+import AllSchedulesList from '@/components/AllSchedulesList.vue';
 import EditScheduleModal from '@/components/EditScheduleModal.vue';
-import { startOfWeek, endOfWeek, startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
-import { useRoute } from 'vue-router';
 import axiosInstance from '@/services/axios';
 import { useAuthStore } from '@/stores/auth';
+import { startOfWeek, endOfWeek, startOfDay, endOfDay, startOfMonth, endOfMonth } from 'date-fns';
 
-const searches = ref([]);
+const allSchedules = ref([]);
+const timezoneName = ref('');
 const currentPeriod = ref(new Date());
 const viewMode = ref('week');
-const selectedStatus = ref('all'); // 선택된 상태
-const route = useRoute();
+const selectedStatus = ref('all');
 const authStore = useAuthStore();
-const timezoneName = ref('');
 const showModal = ref(false);
 const selectedScheduleId = ref(null);
 
-const filteredSearches = computed(() => {
-  let start, end;
-  if (viewMode.value === 'day') {
-    start = startOfDay(currentPeriod.value);
-    end = endOfDay(currentPeriod.value);
-  } else if (viewMode.value === 'week') {
-    start = startOfWeek(currentPeriod.value, { weekStartsOn: 1 });
-    end = endOfWeek(currentPeriod.value, { weekStartsOn: 1 });
-  } else if (viewMode.value === 'month') {
-    start = startOfMonth(currentPeriod.value);
-    end = endOfMonth(currentPeriod.value);
-  } else if (viewMode.value === 'all') {
-    return [...searches.value].sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+const fetchAllSchedules = async () => {
+  try {
+    const response = await axiosInstance.get('/api/schedule/findAllForSearch', {
+      headers: {
+        Authorization: `Bearer ${authStore.accessToken}`,
+      },
+    });
+    allSchedules.value = response.data;
+  } catch (error) {
+    console.error('Error fetching schedules:', error);
   }
-
-  return [...searches.value].filter(schedule => {
-    const startTime = new Date(schedule.startTime);
-    return startTime >= start && startTime <= end;
-  }).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
-});
-
-const filteredSearchesByStatus = computed(() => {
-  if (selectedStatus.value === 'all') {
-    return filteredSearches.value;
-  }
-  return filteredSearches.value.filter(schedule => schedule.status == selectedStatus.value);
-});
-
-const updateSearches = (newSearches) => {
-  searches.value = newSearches;
 };
 
 const fetchTimezone = async () => {
@@ -97,54 +76,6 @@ const fetchTimezone = async () => {
   }
 };
 
-const showEditScheduleModal = (scheduleId) => {
-  selectedScheduleId.value = scheduleId;
-  showModal.value = true;
-};
-
-const handleScheduleUpdate = () => {
-  search(route.query.criterion, route.query.query); // 기존의 검색 조건으로 다시 검색하여 업데이트
-  showModal.value = false;
-};
-
-onMounted(() => {
-  if (route.query.criterion && route.query.query) {
-    search(route.query.criterion, route.query.query);
-    fetchTimezone();
-  }
-});
-
-const search = async (criterion, query) => {
-  let url = `/api/search/${criterion}?${criterion}=${encodeURIComponent(query)}`;
-  if (criterion === 'title') {
-    url = `/api/search/title?title=${encodeURIComponent(query)}`;
-  } else if (criterion === 'tag') {
-    url = `/api/search/tag?tagName=${encodeURIComponent(query)}`;
-  } else if (criterion === 'category') {
-    url = `/api/search/category?categoryName=${encodeURIComponent(query)}`;
-  }
-
-  try {
-    const response = await axiosInstance.get(url, {
-      headers: {
-        Authorization: `Bearer ${authStore.accessToken}`
-      }
-    });
-    const searches = response.data;
-    updateSearches(searches);
-  } catch (error) {
-    console.error('Error during search:', error);
-  }
-};
-
-watch(currentPeriod, (newVal) => {
-  currentPeriod.value = newVal;
-});
-
-watch(viewMode, (newVal) => {
-  viewMode.value = newVal;
-});
-
 const changePeriod = (newPeriod) => {
   currentPeriod.value = newPeriod;
 };
@@ -153,6 +84,52 @@ const changeViewMode = (mode) => {
   viewMode.value = mode;
 };
 
+const filteredSchedules = computed(() => {
+  let start, end;
+  if (viewMode.value === 'day') {
+    start = startOfDay(currentPeriod.value);
+    end = endOfDay(currentPeriod.value);
+  } else if (viewMode.value === 'week') {
+    start = startOfWeek(currentPeriod.value, { weekStartsOn: 1 });
+    end = endOfWeek(currentPeriod.value, { weekStartsOn: 1 });
+  } else if (viewMode.value === 'month') {
+    start = startOfMonth(currentPeriod.value);
+    end = endOfMonth(currentPeriod.value);
+  } else if (viewMode.value === 'all') {
+    return [...allSchedules.value].sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+  }
+
+  return [...allSchedules.value].filter(schedule => {
+    const startTime = new Date(schedule.startTime);
+    return startTime >= start && startTime <= end;
+  }).sort((a, b) => new Date(a.startTime) - new Date(b.startTime));
+});
+
+const filteredSchedulesByStatus = computed(() => {
+  if (selectedStatus.value === 'all') {
+    return filteredSchedules.value;
+  }
+  return filteredSchedules.value.filter(schedule => schedule.status == selectedStatus.value);
+});
+
+const showEditScheduleModal = (scheduleId) => {
+  selectedScheduleId.value = scheduleId;
+  showModal.value = true;
+};
+
+const handleScheduleUpdate = () => {
+  fetchAllSchedules();
+  showModal.value = false;
+};
+
+onMounted(() => {
+  fetchAllSchedules();
+  fetchTimezone();
+});
+
+watch(allSchedules, (newVal) => {
+  console.log('All schedules updated:', newVal);
+});
 </script>
 
 <style scoped>
@@ -187,11 +164,17 @@ const changeViewMode = (mode) => {
   margin-top: 20px;
   margin-bottom: 10px;
   flex-wrap: wrap;
-  /* 컨트롤을 줄바꿈할 수 있도록 수정 */
 }
 
 .nowrap {
   white-space: nowrap;
+}
+
+.status-title {
+  text-align: center;
+  font-size: 1.2rem;
+  margin: 20px 0;
+  font-weight: bold;
 }
 
 .timezone-container {
@@ -255,10 +238,6 @@ const changeViewMode = (mode) => {
   .controls>* {
     width: 100%;
     margin-bottom: 10px;
-  }
-
-  .status-sort {
-    margin-right: 0;
   }
 }
 </style>
