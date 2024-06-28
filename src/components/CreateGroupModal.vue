@@ -88,7 +88,7 @@ export default {
       }
 
       try {
-        const response = await axiosInstance.post('http://localhost:8080/api/groups', {
+        const response = await axiosInstance.post('/api/groups', {
           groupName: this.groupName,
           employeeIds: empNos
         }, config);
@@ -102,7 +102,7 @@ export default {
 
         // 이메일 전송 시도
         try {
-          const emailResponse = await axiosInstance.post(`http://localhost:8080/api/auth/send/group/add/${groupId}`, {
+          const emailResponse = await axiosInstance.post(`/api/auth/send/group/add/${groupId}`, {
             groupId: groupId
           }, config);
           console.log('그룹 생성 메일 전송 성공:', emailResponse.data);
