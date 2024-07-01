@@ -2,7 +2,13 @@
   <div v-if="show" class="modal-overlay">
     <div class="modal-container">
       <button class="close-button" @click="closeModal">✕</button>
-      <h2>일정 수정하기</h2>
+        <template v-if="internalEvent.CategoryNo === 1 || internalEvent.CategoryNo === 2">
+          <h2 v-if="rank === '부장' || rank === '차장'">일정 수정하기</h2>
+          <h2 v-else>일정 상세보기</h2>
+        </template>
+        <template v-else>
+          <h2>일정 수정하기</h2>
+        </template>
       <div class="modal-body">
         <form @submit.prevent="submit">
           <!-- Form Fields -->
@@ -97,8 +103,12 @@
                 v-model="internalEvent.notificationYn"></label>
           </div>
           <div class="modal-footer">
-            <button type="submit" @click="updateSchedule" class="update-button">수정</button>
-            <button type="button" class="delete-button" @click="deleteSchedule">삭제</button>
+            <template v-if="internalEvent.CategoryNo === 1 || internalEvent.CategoryNo === 2">
+              <template v-if = "rank === '부장' || rank === '차장'">
+                <button type="submit" class="update-button">수정</button>
+                <button type="button" class="delete-button" @click="deleteSchedule">삭제</button>
+              </template>
+            </template>
           </div>
         </form>
       </div>
@@ -114,6 +124,7 @@ import axiosInstance from '@/services/axios';
 import TagAdd from './TagAdd.vue';
 import RoutineModal from './RoutineModal.vue';
 import CategoryModal from './CategoryModal.vue';
+import { useAuthStore } from '@/stores/auth';
 
 export default {
   components: {
@@ -158,6 +169,7 @@ export default {
     const loggedInEmpNo = sessionStorage.getItem('empNo');
     const tagMap = ref({});  // 태그 이름과 ID를 매핑하기 위한 객체
     const existingTags = ref([]); // 기존 태그를 저장하는 배열
+    const rank = useAuthStore().rank;
 
     onMounted(() => {
       if (props.scheduleId) {
