@@ -2,7 +2,7 @@
   <div v-if="show" class="modal-overlay">
     <div class="modal-container">
       <button class="close-button" @click="closeModal">✕</button>
-        <template v-if="internalEvent.CategoryNo === 1 || internalEvent.CategoryNo === 2">
+        <template v-if="internalEvent.value.categoryNo === 1 || internalEvent.value.categoryNo === 2">
           <h2 v-if="rank === '부장' || rank === '차장'">일정 수정하기</h2>
           <h2 v-else>일정 상세보기</h2>
         </template>
@@ -103,7 +103,7 @@
                 v-model="internalEvent.notificationYn"></label>
           </div>
           <div class="modal-footer">
-            <template v-if="internalEvent.CategoryNo === 1 || internalEvent.CategoryNo === 2">
+            <template v-if="internalEvent.value.categoryNo === 1 || internalEvent.value.categoryNo === 2">
               <template v-if = "rank === '부장' || rank === '차장'">
                 <button type="submit" class="update-button">수정</button>
                 <button type="button" class="delete-button" @click="deleteSchedule">삭제</button>
