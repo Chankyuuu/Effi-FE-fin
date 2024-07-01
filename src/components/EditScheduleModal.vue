@@ -560,7 +560,8 @@ export default {
       deleteAllParticipants,
       deleteSchedule,
       getRandomColor,
-      removeTag
+      removeTag,
+      rank
     };
   }
 };
