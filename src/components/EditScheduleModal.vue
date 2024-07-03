@@ -109,6 +109,10 @@
                 <button type="button" class="delete-button" @click="deleteSchedule">삭제</button>
               </template>
             </template>
+            <template v-else>
+              <button type="submit" class="update-button">수정</button>
+              <button type="button" class="delete-button" @click="deleteSchedule">삭제</button>
+            </template>
           </div>
         </form>
       </div>
