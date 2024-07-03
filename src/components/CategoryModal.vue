@@ -37,6 +37,7 @@
 import axios from 'axios';
 import DepartmentModal from './DeptModal.vue';
 import GroupModal from './GroupModal.vue';
+import axiosInstance from '../axios';
 
 export default {
   components: { DepartmentModal, GroupModal },
@@ -77,7 +78,7 @@ export default {
       if (!this.scheduleId) return;
       
       try {
-        const response = await axios.get(`/api/schedule/find/${this.scheduleId}`);
+        const response = await axiosInstance.get(`/api/schedule/find/${this.scheduleId}`);
         const categoryNo = response.data.categoryNo;
         this.selectedOption = categoryNo;
         this.categoryName = this.getCategoryName(categoryNo);
