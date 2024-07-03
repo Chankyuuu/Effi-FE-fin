@@ -37,7 +37,7 @@
 import axios from 'axios';
 import DepartmentModal from './DeptModal.vue';
 import GroupModal from './GroupModal.vue';
-import axiosInstance from '../axios';
+import axiosInstance from '@/services/axios';
 
 export default {
   components: { DepartmentModal, GroupModal },
