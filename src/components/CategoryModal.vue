@@ -80,8 +80,10 @@ export default {
       try {
         const response = await axiosInstance.get(`/api/schedule/find/${this.scheduleId}`);
         const categoryNo = response.data.categoryNo;
-        this.selectedOption = categoryNo;
-        this.categoryName = this.getCategoryName(categoryNo);
+        
+        const responseCategory = await axiosInstance.get(`/api/category/find/${categoryNo}`);
+        this.selectedOption = responseCategory.data.categoryId;
+        this.categoryName = responseCategory.data.categoryName;
       } catch (error) {
         console.error('Error fetching category:', error);
       }

@@ -48,10 +48,8 @@
           </div>
           <div class="form-group">
             <label for="category">카테고리</label>
-            <button @click="showCategoryModal = true" type="button" class="category-btn" id="category">카테고리
-              추가하기</button>
-            <CategoryModal :show="showCategoryModal" :schedule-id="scheduleId" @close="showCategoryModal = false"
-              @select="handleCategorySelect" />
+            <button @click="openCategoryModal" type="button" class="category-btn" id="category">카테고리 추가하기</button>
+            <CategoryModal :show="showCategoryModal" :schedule-id="scheduleId" @close="showCategoryModal = false" @select="handleCategorySelect" />
             <div v-if="internalEvent.categoryName" class="selected-category">
               선택된 카테고리: {{ internalEvent.categoryName }}
             </div>
@@ -175,6 +173,7 @@ export default {
     const existingTags = ref([]); // 기존 태그를 저장하는 배열
     const rank = useAuthStore().rank;
     const categoryNum = ref(null);
+    const categoryResponse = await axiosInstance.get(`/api/category/find/${schedule.categoryNo}`);
 
     onMounted(() => {
       if (props.scheduleId) {
@@ -206,11 +205,11 @@ export default {
           startTime: startDateTime.toTimeString().split(' ')[0].slice(0, 5),
           endDate: new Date(endDateTime.getTime() - (endDateTime.getTimezoneOffset() * 60000)).toISOString().split('T')[0],
           endTime: endDateTime.toTimeString().split(' ')[0].slice(0, 5),
-          categoryNo: schedule.categoryNo ? schedule.categoryNo.toString() : '',
+          categoryNo: categoryResponse.data.categoryId,
+          categoryName: categoryResponse.data.categoryName,
           tags: schedule.tags ? schedule.tags.map(tag => tag.tagName) : [],
           routineId: schedule.routineId,
-          routineCycle: schedule.routineCycle,
-          categoryName: schedule.categoryName // categoryName 추가
+          routineCycle: schedule.routineCycle
         };
         const responseCategory = await axiosInstance.get(`/api/category/find/${schedule.categoryNo}`);
 
@@ -324,15 +323,15 @@ export default {
         }
 
         let apiUrl;
-        switch (parseInt(internalEvent.value.categoryNo)) {
+        switch (parseInt(categoryResponse.data.categoryNo)) {
           case 1:
             apiUrl = `/api/schedule/update/company/${props.scheduleId}`;
             break;
           case 2:
-            apiUrl = `/api/schedule/update/dept/${internalEvent.value.deptId}/${props.scheduleId}`;
+          apiUrl = `/api/schedule/update/dept/${formattedEvent.deptId}/${props.scheduleId}`;
             break;
           case 3:
-            apiUrl = `/api/schedule/update/group/${internalEvent.value.groupId}/${props.scheduleId}`;
+          apiUrl = `/api/schedule/update/group/${formattedEvent.groupId}/${props.scheduleId}`;
             break;
           case 4:
             apiUrl = `/api/schedule/update/${props.scheduleId}`;
@@ -544,6 +543,10 @@ export default {
       }
     };
 
+    const openCategoryModal = async () => {
+      showCategoryModal.value = true;
+      await fetchScheduleDetails(props.scheduleId);
+    };
     return {
       internalEvent,
       showRoutineModal,
@@ -571,7 +574,8 @@ export default {
       getRandomColor,
       removeTag,
       rank,
-      categoryNum
+      categoryNum,
+      openCategoryModal
     };
   }
 };
