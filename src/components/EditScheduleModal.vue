@@ -207,7 +207,7 @@ export default {
           routineId: schedule.routineId,
           routineCycle: schedule.routineCycle,
         };
-        const responseCategory = await axiosInstance.get(`/api/category/find/${schedule.categoryId}`);
+        const responseCategory = await axiosInstance.get(`/api/category/find/categoryNo`);
 
         categoryNum.value = responseCategory.data.categoryId;
 
