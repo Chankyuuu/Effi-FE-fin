@@ -210,6 +210,7 @@ export default {
           tags: schedule.tags ? schedule.tags.map(tag => tag.tagName) : [],
           routineId: schedule.routineId,
           routineCycle: schedule.routineCycle,
+          categoryName: schedule.categoryName // categoryName 추가
         };
         const responseCategory = await axiosInstance.get(`/api/category/find/${schedule.categoryNo}`);
 
