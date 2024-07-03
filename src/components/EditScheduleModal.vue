@@ -173,8 +173,7 @@ export default {
     const existingTags = ref([]); // 기존 태그를 저장하는 배열
     const rank = useAuthStore().rank;
     const categoryNum = ref(null);
-    const categoryResponse = await axiosInstance.get(`/api/category/find/${schedule.categoryNo}`);
-
+    
     onMounted(() => {
       if (props.scheduleId) {
         fetchScheduleDetails(props.scheduleId);
@@ -197,6 +196,9 @@ export default {
         const schedule = response.data;
         const startDateTime = new Date(schedule.startTime);
         const endDateTime = new Date(schedule.endTime);
+
+        const categoryResponse = await axiosInstance.get(`/api/category/find/${schedule.categoryNo}`);
+
 
         internalEvent.value = {
           ...internalEvent.value,
