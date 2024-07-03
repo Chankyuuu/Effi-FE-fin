@@ -195,8 +195,6 @@ export default {
         const startDateTime = new Date(schedule.startTime);
         const endDateTime = new Date(schedule.endTime);
 
-        const responseCategory = await axiosInstance.get(`/api/category/find/${schedule.categoryId}`);
-
         internalEvent.value = {
           ...internalEvent.value,
           ...schedule,
@@ -209,6 +207,8 @@ export default {
           routineId: schedule.routineId,
           routineCycle: schedule.routineCycle,
         };
+        const responseCategory = await axiosInstance.get(`/api/category/find/${schedule.categoryId}`);
+
         categoryNum.value = responseCategory.data.categoryId;
 
         existingTags.value = internalEvent.value.tags.slice(); // 기존 태그를 저장
